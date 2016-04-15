@@ -20,7 +20,7 @@ public class ImageFaceDetectionApp {
 
        CascadeClassifier faceDetector = new CascadeClassifier(ImageFaceDetectionApp.class.getResource("lbpcascade_frontalface.xml").getPath().substring(1));
        Mat image = Imgcodecs
-               .imread(ImageFaceDetectionApp.class.getResource("WIN_20160415_140500.JPG").getPath().substring(1));
+               .imread(ImageFaceDetectionApp.class.getResource("cit.jpg").getPath().substring(1));
 
        MatOfRect faceDetections = new MatOfRect();
        faceDetector.detectMultiScale(image, faceDetections);
