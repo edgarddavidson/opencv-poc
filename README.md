@@ -11,3 +11,4 @@ This project contains a set of OpenCV samples.
 
 ---
 adriano.tavares@gmail.com
+edgardc@gmail.com
