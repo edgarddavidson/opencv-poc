@@ -8,6 +8,8 @@ This project contains a set of OpenCV samples.
 4. Video playback
 5. Image face detection
 6. Video face detection
+7. Background Diff
+8. Connected elements
 
 ---
 adriano.tavares@gmail.com
