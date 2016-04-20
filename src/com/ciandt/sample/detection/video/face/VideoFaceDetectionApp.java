@@ -1,4 +1,4 @@
-package com.ciandt.sample.detection.video;
+package com.ciandt.sample.detection.video.face;
 
 import java.awt.Image;
 
