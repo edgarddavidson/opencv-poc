@@ -15,7 +15,7 @@ This project contains a set of OpenCV samples in Java.
 ---
 adriano.tavares@gmail.com
 </br>
-edgardc@gmail.com
+edgard.davidson@gmail.com
 
 ---
 
