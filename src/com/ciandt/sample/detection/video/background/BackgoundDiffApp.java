@@ -11,8 +11,10 @@ import org.opencv.core.Mat;
 import org.opencv.videoio.VideoCapture;
 
 import com.ciandt.sample.detection.utils.ImageProcessor;
+import com.ciandt.sample.detection.video.background.backgroundprocessors.AbsDifferenceBackground;
 import com.ciandt.sample.detection.video.background.backgroundprocessors.CustomTransformationBackground;
 import com.ciandt.sample.detection.video.background.backgroundprocessors.MixtureOfGaussianBackground;
+import com.ciandt.sample.detection.video.background.backgroundprocessors.RunningAverageBackground;
 import com.ciandt.sample.detection.video.background.utils.VideoProcessor;
 
 
@@ -72,8 +74,8 @@ public class BackgoundDiffApp
 			
 			//videoProcessor = new AbsDifferenceBackground(backgroundImage);
 			//videoProcessor = new RunningAverageBackground();
-			//videoProcessor = new MixtureOfGaussianBackground();
-			videoProcessor = new CustomTransformationBackground();
+			videoProcessor = new MixtureOfGaussianBackground();
+			//videoProcessor = new CustomTransformationBackground();
 		
 			
 			while (true){  
