@@ -10,8 +10,13 @@ This project contains a set of OpenCV samples.
 6. Video face detection
 7. Background Diff
 8. Connected elements
+9. Vagao 
 
 ---
 adriano.tavares@gmail.com
 </br>
 edgardc@gmail.com
+
+---
+
+Download OpenCV 3.1 from http://opencv.org
