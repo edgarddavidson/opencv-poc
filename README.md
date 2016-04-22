@@ -1,6 +1,6 @@
 # opencv-poc
 
-This project contains a set of OpenCV samples.
+This project contains a set of OpenCV samples in Java.
 
 1. Simple sample
 2. Image viewer
@@ -10,7 +10,7 @@ This project contains a set of OpenCV samples.
 6. Video face detection
 7. Background Diff
 8. Connected elements
-9. Vagao 
+9. Vagão
 
 ---
 adriano.tavares@gmail.com
