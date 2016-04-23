@@ -56,4 +56,11 @@ public class RunningAverageBackground implements VideoProcessor {
 		return result;
 	}
 
+
+	@Override
+	public Mat process(Mat frame1, Mat frame2) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

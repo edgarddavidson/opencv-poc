@@ -40,10 +40,16 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoCapture;
 
 import com.ciandt.sample.detection.utils.ImageProcessor;
+import com.ciandt.sample.detection.video.background.backgroundprocessors.AbsDifferenceBackground;
+import com.ciandt.sample.detection.video.background.backgroundprocessors.CustomTransformationBackground;
 import com.ciandt.sample.detection.video.background.backgroundprocessors.MixtureOfGaussianBackground;
 import com.ciandt.sample.detection.video.background.utils.VideoProcessor;
 
 public class VagaoApp {
+	
+	static{ 
+		System.loadLibrary(Core.NATIVE_LIBRARY_NAME); 
+	}
 
 	private static final String onFillString = "On";
 	private static final String offFillString = "Off";
@@ -79,13 +85,25 @@ public class VagaoApp {
 		runMainLoop();
 	}
 	
+	private void initGUI() {
+		frame = createJFrame(windowName);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  
+		
+		frame.setSize(600,480);  
+		frame.pack();
+		//frame.setLocationRelativeTo(null);
+		frame.setVisible(true);
+
+	}
+	
 	private void runMainLoop(){
 	
 		VideoProcessor videoProcessor;
-		VideoCapture capture = new VideoCapture(0);
+		VideoCapture capture = new VideoCapture("carros.mp4");
+		Mat frame2 = new Mat();
 		
 		if( capture.isOpened()){
-			videoProcessor = new MixtureOfGaussianBackground();		
+			videoProcessor = new AbsDifferenceBackground();		
 			capture.read(currentImage);  
 			
 			binaryImage.create(new Size(currentImage.cols(), currentImage.rows()), CvType.CV_8UC1);
@@ -94,25 +112,23 @@ public class VagaoApp {
 			while (true){  
 				capture.read(currentImage);  
 				if( !currentImage.empty() ){
+					capture.read(frame2);  
 					
 					
+					//foregroundImage = videoProcessor.process(currentImage);
+					foregroundImage = videoProcessor.process(currentImage, frame2);
 					
-					foregroundImage = videoProcessor.process(currentImage);
+					//Imgproc.cvtColor(foregroundImage, binaryImage,Imgproc.COLOR_BGR2GRAY);
+					//Imgproc.threshold(foregroundImage, binaryImage, imageThreshold, 255.0, Imgproc.THRESH_BINARY_INV);
 					
-					Imgproc.cvtColor(currentImage, binaryImage,Imgproc.COLOR_BGR2GRAY);
-					Imgproc.threshold(binaryImage, binaryImage, imageThreshold, 255.0, Imgproc.THRESH_BINARY_INV);
+					Mat structuringElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(15, 15));
+				    Imgproc.morphologyEx(foregroundImage, binaryImage, Imgproc.MORPH_OPEN, structuringElement);
+				    Imgproc.morphologyEx(binaryImage, binaryImage, Imgproc.MORPH_CLOSE, structuringElement);
 		
 					drawContours();
 					
 					// update
-					Image tempCurrent = imageProcessor.toBufferedImage(currentImage);
-					Image tempForeground = imageProcessor.toBufferedImage(foregroundImage);
-					Image tempBinary = imageProcessor.toBufferedImage(binaryImage);
-					currentImageView.setIcon(new ImageIcon(tempCurrent));
-					foregroundImageView.setIcon(new ImageIcon(tempForeground));
-					binaryImageView.setIcon(new ImageIcon(tempBinary));
-					
-					frame.pack();
+					updateView();
 					
 					try {
 						Thread.sleep(70);
@@ -126,17 +142,61 @@ public class VagaoApp {
 		}
 		
 	}
-
-	private void initGUI() {
-		frame = createJFrame(windowName);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  
+	
+	protected void drawContours() {
+		List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+		Mat contourMat = binaryImage.clone();
 		
-		frame.setSize(600,480);  
-		frame.pack();
-		//frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
-
+		int thickness = (fillFlag.equals(onFillString))?-1:2;
+		
+		Imgproc.findContours(contourMat, contours, new Mat(), Imgproc.CHAIN_APPROX_NONE,Imgproc.CHAIN_APPROX_SIMPLE);
+		System.out.println("Number of found contours: "+contours.size());
+		for(int i=0;i<contours.size();i++){
+			MatOfPoint currentContour = contours.get(i);
+			double currentArea = Imgproc.contourArea(currentContour);
+			
+			if(currentArea > areaThreshold){
+				System.out.println("Contour points: " +contours.get(i).size().height);
+				//Imgproc.drawContours(currentImage, contours, i, new Scalar(0,255,0), thickness);
+				System.out.println("Area: "+currentArea);
+				
+				if(boundingBoxString.equals(enclosingType)){
+					drawBoundingBox(currentContour);
+				}
+				else if (circleString.equals(enclosingType)){
+					drawEnclosingCircle(currentContour);					
+				}
+				else if (convexHullString.equals(enclosingType)){
+					drawConvexHull(currentContour);					
+				}
+				
+			}
+			else{
+				//Imgproc.drawContours(currentImage, contours, i, new Scalar(0,0,255), thickness);	
+			}
+			
+		}
 	}
+
+	private void updateView(){
+		Image tempCurrent = imageProcessor.toBufferedImage(resizeImage(currentImage));
+		Image tempForeground = imageProcessor.toBufferedImage(resizeImage(foregroundImage));
+		Image tempBinary = imageProcessor.toBufferedImage(resizeImage(binaryImage));
+		currentImageView.setIcon(new ImageIcon(tempCurrent));
+		foregroundImageView.setIcon(new ImageIcon(tempForeground));
+		binaryImageView.setIcon(new ImageIcon(tempBinary));
+		
+		frame.pack();
+	}
+	
+	private Mat resizeImage(Mat src){
+		Mat resizeimage = new Mat();
+		Size sz = new Size(600,480);
+		Imgproc.resize( src, resizeimage, sz );
+		
+		return resizeimage; 
+	}
+	
 
 	private JFrame createJFrame(String windowName) {
 		JFrame frame = new JFrame(windowName);
@@ -177,44 +237,11 @@ public class VagaoApp {
 		frame.add(resetButton,c);
 	}
 
-	protected void drawContours() {
-		List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
-		Mat contourMat = binaryImage.clone();
-		
-		int thickness = (fillFlag.equals(onFillString))?-1:2;
-		
-		Imgproc.findContours(contourMat, contours, new Mat(), Imgproc.CHAIN_APPROX_NONE,Imgproc.CHAIN_APPROX_SIMPLE);
-		System.out.println("Number of found contours: "+contours.size());
-		for(int i=0;i<contours.size();i++){
-			MatOfPoint currentContour = contours.get(i);
-			double currentArea = Imgproc.contourArea(currentContour);
-			
-			if(currentArea > areaThreshold){
-				System.out.println("Contour points: " +contours.get(i).size().height);
-				Imgproc.drawContours(currentImage, contours, i, new Scalar(0,255,0), thickness);
-				System.out.println("Area: "+currentArea);
-				
-				if(boundingBoxString.equals(enclosingType)){
-					drawBoundingBox(currentContour);
-				}
-				else if (circleString.equals(enclosingType)){
-					drawEnclosingCircle(currentContour);					
-				}
-				else if (convexHullString.equals(enclosingType)){
-					drawConvexHull(currentContour);					
-				}
-				
-			}
-			else{
-				Imgproc.drawContours(currentImage, contours, i, new Scalar(0,0,255), thickness);	
-			}
-			
-		}
-	}
+	
 
 	private void drawBoundingBox(MatOfPoint currentContour) {
 		Rect rectangle = Imgproc.boundingRect(currentContour);
-		Imgproc.rectangle(currentImage, rectangle.tl(), rectangle.br(), new Scalar(255,0,0),1);
+		Imgproc.rectangle(currentImage, rectangle.tl(), rectangle.br(), new Scalar(255,0,0),5);
 
 	}
 
@@ -503,10 +530,10 @@ private void setupUpperSlider(JFrame frame) {
 		
 	}
 	
-	static{ System.loadLibrary(Core.NATIVE_LIBRARY_NAME); }
+	
 
 	public static void main(String[] args) throws Exception {
-			VagaoApp gui = new VagaoApp("Vagão App");
+			VagaoApp gui = new VagaoApp("Vagï¿½o App");
 			gui.init();
 
 

@@ -21,4 +21,10 @@ public class MixtureOfGaussianBackground implements VideoProcessor {
 		return foreground;
 	}
 
+	@Override
+	public Mat process(Mat frame1, Mat frame2) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

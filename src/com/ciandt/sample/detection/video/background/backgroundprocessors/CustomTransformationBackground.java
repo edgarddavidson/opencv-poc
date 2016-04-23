@@ -18,13 +18,22 @@ public class CustomTransformationBackground implements VideoProcessor {
 		mog.apply(inputImage, foreground, learningRate);
 
 		Mat structuringElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3));
-		for (int i = 0; i < 1; i++) {
-			Imgproc.dilate(foreground, foreground, structuringElement);
-			//Imgproc.dilate(foreground, foreground, structuringElement5x5);
-			//Imgproc.erode(foreground, foreground, structuringElement5x5);
-		}
+	//	Imgproc.morphologyEx(foreground, foreground, Imgproc.MORPH_OPEN, structuringElement);
+	//	Imgproc.morphologyEx(foreground, foreground, Imgproc.MORPH_CLOSE, structuringElement);
+		
+		Imgproc.GaussianBlur(foreground, foreground, new Size(5,5),0 );
+		Imgproc.threshold(foreground, foreground, 0, 255, Imgproc.THRESH_OTSU);
+	//	Imgproc.adaptiveThreshold(foreground, foreground, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_OTSU, 15, 4);
+		
+		
 
 		return foreground;
+	}
+
+	@Override
+	public Mat process(Mat frame1, Mat frame2) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
